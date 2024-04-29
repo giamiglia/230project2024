@@ -1,0 +1,274 @@
+---
+title: "S&DS 230 Final Project"
+author: "Group: Olive Oil Mashed Potato"
+date: "2024-04-27"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Grooves and Gains: What music should you listen to when investing your $$$?
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+data <- read.csv("https://github.com/giamiglia/230project2024/raw/main/230finaldata.csv", sep = ";")
+```
+
+**Data Cleaning and Variable Creation**
+```{r}
+#replace NA with 0, remove non-numeric values
+data$Lot1 <- as.numeric(data$Lot1)
+data$Lot1[is.na(data$Lot1)] <- 0
+data$Lot2[is.na(data$Lot2)] <- 0
+data$Lot3[is.na(data$Lot3)] <- 0
+data$invs_A[is.na(data$invs_A)] <- 0
+data$invs_B[is.na(data$invs_B)] <- 0
+data$invs_C[is.na(data$invs_C)] <- 0
+
+#renaming misspelled variables
+names(data)[names(data) == "earing"] <- "hearingproblems"
+names(data)[names(data) == "Overdradt"] <- "overdraft"
+
+#making sure numbers are numerical entries
+data$Age <- as.numeric(data$Age)
+data$Lot1 <- as.numeric(data$Lot1)
+
+#creating new categorical variables that clarify numerical entries
+data$gender <- c("Male", "Female")[data$Gender + 1]
+data$musictype <- c("Slow", "Fast", "None")[data$Group +1]
+data$maritalstatus <- c("Single", "Married", "Divorced", "Widowed", "Separated")[data$Marital]
+
+#creating delta categories vivian mentioned
+data$moodchange <- data$Mood.after - data$Mood.before
+
+#creating expected return categories
+data$Lot1_return <- (data$Lot1 * (0.5 * 0.3 + 0.5 * 0.05)) + ((100 - data$Lot1) * 0.1)
+data$Lot2_return <- (data$Lot2 * (0.5 * 0.21 + 0.5 * -0.04)) + ((100 - data$Lot1) * 0.01)
+data$Lot3_return <- (data$Lot2 * (0.5 * 0.25)) + ((100 - data$Lot1) * 0.05)
+data$invs_return <- 0.1 * (data$invs_A * (0.5 * 0.08 + 0.5 * 0.12) +
+                       data$invs_B * (0.5 * 0.04 + 0.5 * 0.24) +
+                       data$invs_C * (0.05))
+
+#Creating average category across 3 lotteries
+data$Lot_avg <- rowMeans(data[, 4:6])
+data$Lot_return_avg <- rowMeans(data[, 28:30])
+
+#creating portfolio diversification category
+data$invs_num <- rowSums(data[, 7:9] > 0)
+
+#remove less interesting categories? since we have so many e.g. birth order ?
+
+summary(data)
+names(data)
+```
+**Plots**
+
+```{r}
+#Plots of lottery by gender
+par(mfrow = c(1,3))
+boxplot(data$Lot1 ~ data$gender, col = c("powderblue", "darkslateblue"),
+        main = "Lottery 1", xlab = "Gender", ylab = "% Invested in Risky Asset")
+boxplot(data$Lot2 ~ data$gender, col = c("powderblue", "darkslateblue"),
+        main = "Lottery 2", xlab = "Gender", ylab = "% Invested in Risky Asset")
+boxplot(data$Lot3 ~ data$gender, col = c("powderblue", "darkslateblue"),
+        main = "Lottery 3", xlab = "Gender", ylab = "% Invested in Risky Asset")
+
+(test_lotavg_gender <- t.test(data$Lot_avg ~ data$gender, conf.level = 0.95))
+
+```
+```{r}
+#Lottery by music type
+par(mfrow = c(1,2))
+boxplot(data$Lot_avg[data$gender == "Male"] ~ data$musictype[data$gender == "Male"],
+        col = "darkseagreen",
+        main = "Risky Investment vs Music Type, Male", 
+        xlab = "Music Type", 
+        ylab = "% Invested in Risky Asset",
+        cex.main = 0.7)
+boxplot(data$Lot_avg[data$gender == "Female"] ~ data$musictype[data$gender == "Female"],
+        col = "darkseagreen1",
+        main = "Risky Investment vs Music Type, Female", 
+        xlab = "Music Type", 
+        ylab = "% Invested in Risky Asset",
+        cex.main = 0.7)
+
+#Investment Diversification by music type
+par(mfrow = c(1,2))
+boxplot(data$invs_num[data$gender == "Male"] ~ data$musictype[data$gender == "Male"],
+        col = "darkseagreen",
+        main = "Portfolio Diversity vs Music Type, Male", 
+        xlab = "Music Type", 
+        ylab = "Number of Securities in Portfolio",
+        cex.main = 0.7)
+boxplot(data$invs_num[data$gender == "Female"] ~ data$musictype[data$gender == "Female"],
+        col = "darkseagreen1",
+        main = "Portfolio Diversity vs Music Type, Female", 
+        xlab = "Music Type", 
+        ylab = "Number of Securities in Portfolio",
+        cex.main = 0.7)
+
+#Lottery Returns by music type
+par(mfrow = c(1,2))
+boxplot(data$Lot_return_avg[data$gender == "Male"] ~ data$musictype[data$gender == "Male"],
+        col = "darkseagreen",
+        main = "Average Lottery Return vs Music Type, Male", 
+        xlab = "Music Type", 
+        ylab = "% Return on Investment",
+        cex.main = 0.7)
+boxplot(data$Lot_return_avg[data$gender == "Female"] ~ data$musictype[data$gender == "Female"],
+        col = "darkseagreen1",
+        main = "Average Lottery Return vs Music Type, Female", 
+        xlab = "Music Type", 
+        ylab = "% Return on Investment",
+        cex.main = 0.7)
+
+#Investment Returns by music type
+par(mfrow = c(1,2))
+boxplot(data$invs_return[data$gender == "Male"] ~ data$musictype[data$gender == "Male"],
+        col = "darkseagreen",
+        main = "Portfolio Return vs Music Type, Male", 
+        xlab = "Music Type", 
+        ylab = "% Return on Investment",
+        cex.main = 0.7)
+boxplot(data$invs_return[data$gender == "Female"] ~ data$musictype[data$gender == "Female"],
+        col = "darkseagreen1",
+        main = "Portfolio Return vs Music Type, Female", 
+        xlab = "Music Type", 
+        ylab = "% Return on Investment",
+        cex.main = 0.7)
+
+
+```
+
+```{r}
+#moodchange by music type
+par(mfrow = c(1,2))
+boxplot(data$moodchange[data$gender == "Male"] ~ data$musictype[data$gender == "Male"],
+        col = "darkseagreen",
+        main = "Mood Change vs Music Type, Male", 
+        xlab = "Music Type", 
+        ylab = "Mood Change",
+        cex.main = 0.7)
+boxplot(data$moodchange[data$gender == "Female"] ~ data$musictype[data$gender == "Female"],
+        col = "darkseagreen1",
+        main = "Mood Change vs Music Type, Female", 
+        xlab = "Music Type", 
+        ylab = "Mood Change",
+        cex.main = 0.7)
+#musiclike by music type
+par(mfrow = c(1,2))
+boxplot(data$music_like[data$gender == "Male"] ~ data$musictype[data$gender == "Male"],
+        col = "darkseagreen",
+        main = "Music Rating vs Music Type, Male", 
+        xlab = "Music Type", 
+        ylab = "Rating (1-3 scale)",
+        cex.main = 0.7)
+boxplot(data$music_like[data$gender == "Female"] ~ data$musictype[data$gender == "Female"],
+        col = "darkseagreen1",
+        main = "Music Rating vs Music Type, Female", 
+        xlab = "Music Type", 
+        ylab = "Rating (1-3 scale)",
+        cex.main = 0.7)
+
+```
+```{r}
+#Lottery Returns by moodchange 
+#(idea was correlation between music you like vs success of investment, BUT PROBLEM is moodchange can be positively correlated with investment return for other reasons lol so idk abt this one what do yall think)
+par(mfrow = c(1,2))
+plot(data$moodchange[data$gender == "Male"], 
+     data$Lot_return_avg[data$gender == "Male"],
+     main = "Average Lottery Returns vs Mood Change, Male",
+     xlab = "Mood Change",
+     ylab = "% Average Lottery Returns",
+     col = "hotpink3",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$Lot_return_avg[data$gender == "Male"] ~ data$moodchange[data$gender == "Male"]), 
+       col = "red")
+plot(data$moodchange[data$gender == "Female"], 
+     data$Lot_return_avg[data$gender == "Female"],
+     main = "Average Lottery Returns vs Mood Change, Female",
+     xlab = "Mood Change",
+     ylab = "% Average Lottery Returns",
+     col = "hotpink",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$Lot_return_avg[data$gender == "Female"] ~ data$moodchange[data$gender == "Female"]), 
+       col = "red")
+
+#Investment Returns by moodchange
+par(mfrow = c(1,2))
+plot(data$moodchange[data$gender == "Male"], 
+     data$invs_return[data$gender == "Male"],
+     main = "Average Portfolio Returns vs Mood Change, Male",
+     xlab = "Mood Change",
+     ylab = "% Average Portfolio Returns",
+     col = "hotpink3",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$invs_return[data$gender == "Male"] ~ data$moodchange[data$gender == "Male"]), 
+       col = "red")
+plot(data$moodchange[data$gender == "Female"], 
+     data$invs_return[data$gender == "Female"],
+     main = "Average Portfolio Returns vs Mood Change, Female",
+     xlab = "Mood Change",
+     ylab = "% Average Portfolio Returns",
+     col = "hotpink",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$invs_return[data$gender == "Female"] ~ data$moodchange[data$gender == "Female"]), 
+       col = "red")
+
+#Lottery Returns by Music rating
+par(mfrow = c(1,2))
+plot(data$music_like[data$gender == "Male"], 
+     data$Lot_return_avg[data$gender == "Male"],
+     main = "Average Lottery Returns vs Music Rating, Male",
+     xlab = "Music Rating (1-3 Scale)",
+     ylab = "% Average Lottery Returns",
+     col = "hotpink3",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$Lot_return_avg[data$gender == "Male"] ~ data$music_like[data$gender == "Male"]), 
+       col = "red")
+plot(data$music_like[data$gender == "Female"], 
+     data$Lot_return_avg[data$gender == "Female"],
+     main = "Average Lottery Returns vs Music Rating, Female",
+     xlab = "Music Rating (1-3 Scale)",
+     ylab = "% Average Lottery Returns",
+     col = "hotpink",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$Lot_return_avg[data$gender == "Female"] ~ data$music_like[data$gender == "Female"]), 
+       col = "red")
+
+#Portfolio Returns by Music rating
+par(mfrow = c(1,2))
+plot(data$music_like[data$gender == "Male"], 
+     data$invs_return[data$gender == "Male"],
+     main = "Average Portfolio Returns vs Music Rating, Male",
+     xlab = "Music Rating (1-3 Scale)",
+     ylab = "% Average Portfolio Returns",
+     col = "hotpink3",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$invs_return[data$gender == "Male"] ~ data$music_like[data$gender == "Male"]), 
+       col = "red")
+plot(data$music_like[data$gender == "Female"], 
+     data$invs_return[data$gender == "Female"],
+     main = "Average Portfolio Returns vs Music Rating, Female",
+     xlab = "Music Rating (1-3 Scale)",
+     ylab = "% Average Portfolio Returns",
+     col = "hotpink",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$invs_return[data$gender == "Female"] ~ data$music_like[data$gender == "Female"]), 
+       col = "red")
+```
+
+
