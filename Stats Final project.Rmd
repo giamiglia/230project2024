@@ -354,6 +354,7 @@ abline(lm(data$invs_return[data$gender == "Female"] ~ data$music_like[data$gende
 These scatterplots dispolay the relationship between average portfolio returns and music ratings on a 1-3 scale, one for males and the other for females. For males, the average portfolio returns range from around 6 to 14 across different music rating values from 1.0 to 3.0. There is no clear trend or pattern visible, with the points scattered randomly across the range of music ratings. This suggests that music ratings do not have a significant impact on portfolio returns for males. For females, the average portfolio returns range from around 6 to 12. There is a positive linear trend visible, with the line of best fit sloping upwards from left to right. As the music rating increases from 1.0 to 3.0, the average portfolio returns tend to increase correspondingly. This relationship appears to be relatively strong, indicating that higher music ratings are associated with higher average portfolio returns for females. The spread of points is slightly tighter for females compared to males, suggesting potentially less variability in portfolio returns for a given music rating level among females. While the overall trend for females is positive, there is still some variation in the data points around the line of best fit, implying that music ratings alone may not fully explain the portfolio returns, and other factors could also be at play. Overall, while music ratings do not seem to significantly impact portfolio returns for males based on this scatterplot, for females, higher music ratings are associated with higher average portfolio returns in a linear fashion across the range of observed music rating values. The relationship between music ratings and portfolio returns appears to be more pronounced and consistent for females compared to males.
 
 ## Correlations Plot
+We ran these following plots to visually see the correlations and significance values.
 ```{r, echo=FALSE}
 source("http://www.reuningscherer.net/s&ds230/Rfuncs/regJDRS.txt")
 data.cor <- data[ , c("Lot1", "Lot2", "Lot3", "invs_A", "invs_B", "invs_C")]
@@ -368,6 +369,9 @@ corrplot.mixed(cor(data.cor), lower.col="black", upper = "ellipse", tl.col = "bl
 library(PerformanceAnalytics)
 chart.Correlation(data.cor, histogram = TRUE, pch = 19)
 ```
+The above two plots display the correlations between our continuous variables in our dataset. Correlations with no X's are significant correlations (or ones with asterisks), which in our case is all of them. There is a higher relative significant correlation between BLANK and BLANK. Is BLANK. truly as strong of a predictor of BLANK as it appears? We ran a bootstrap to find out. 
+
+## Bootstrap Test
 
 ```{r}
 ttest1 <- t.test(data$Lot_avg ~ data$gender, conf.level = 0.99)
