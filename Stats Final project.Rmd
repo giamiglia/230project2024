@@ -101,10 +101,13 @@ data$Lot_return_avg <- rowMeans(data[, 28:30])
 #creating portfolio diversification category
 data$invs_num <- rowSums(data[, 7:9] > 0)
 
-#remove less interesting categories? since we have so many e.g. birth order ?
+#remove irrelevant categories since we have so many e.g. number of kids, birth order, residence, religion, and overdraft
+data <- data[,-13]
+data <- data[,-14]
+data <- data[,-15]
+data <- data[,-16]
+data <- data[,-17]
 
-summary(data)
-names(data)
 ```
 
 # Plots
