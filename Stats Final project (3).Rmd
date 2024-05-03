@@ -61,25 +61,17 @@ names(data)
 
 **Main Issues in Dataset:**
 
-- **NA Values:**
-  - Variables such as *Lot1* had NA values instead of 0s.
-- **Binary Categories:**
-  - Categorical variables like *Gender* used binary (0 or 1) inputs instead of text.
-- **Variables with Limited Insight:**
-  - Variables like *InvA* ("coins" invested in security A) that do not reveal much about investment habits.
-- **Grammatical and Format Issues:**
-  - Issues such as *Age* not being in numerical format.
+- **NA Values:** Variables such as **Lot1** had NA values instead of 0s.
+- **Binary Categories:** Categorical variables like **Gender** used binary (0 or 1) inputs instead of text.
+- **Variables with Limited Insight:** Variables like **InvA** ("coins" invested in security A) that do not reveal much about investment habits.
+- **Grammatical and Format Issues:** Issues such as **Age** not being in numerical format.
 
 **Data Cleaning Steps:**
 
-- **Handling NA Values:**
-  - Ran code to identify NA values in variable columns and replaced with '0'.
-- **Data Type Conversion:**
-  - Used `as.numeric()` function to change numbers to numerical format.
-- **Creating New Variables:**
-  - Created new variables such as *invs_return*, calculating expected return of participants' investments using `rowSums()` and `rowMeans()`.
-- **Correcting Variable Names:**
-  - Ran code that identified and replaced misspelled variable names with corrected names.
+- **Handling NA Values:** Ran code to identify NA values in variable columns and replaced with '0'.
+- **Data Type Conversion:** Used `as.numeric()` function to change numbers to numerical format.
+- **Creating New Variables:** Created new variables such as **invs_return**, calculating expected return of participants' investments using `rowSums()` and `rowMeans()`.
+- **Correcting Variable Names:** Ran code that identified and replaced misspelled variable names with corrected names.
 
 ```{r include=FALSE}
 #replace NA with 0, remove non-numeric values
@@ -264,7 +256,6 @@ These boxplots depict the distribution of music ratings provided by males and fe
 
 ```{r out.width="70%", fig.align='center'}
 #Lottery Returns by moodchange 
-#(idea was correlation between music you like vs success of investment, BUT PROBLEM is moodchange can be positively correlated with investment return for other reasons lol so idk abt this one what do yall think)
 par(mfrow = c(1,2))
 plot(data$moodchange[data$gender == "Male"], 
      data$Lot_return_avg[data$gender == "Male"],
@@ -373,7 +364,9 @@ These scatterplots dispolay the relationship between average portfolio returns a
 
 ## Correlations Plot
 We ran these following plots to visually see the correlations and significance values.
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning = FALSE, message = FALSE, fig.align = "center"}
+library(car)
+library(corrplot)
 source("http://www.reuningscherer.net/s&ds230/Rfuncs/regJDRS.txt")
 data.cor <- data[ , c("invs_return", "Lot_return_avg", "Lot1", "Lot2", "Lot3", "invs_A", "invs_B", "invs_C", "overdraft", "moodchange", "Mood.before")]
 
@@ -384,46 +377,18 @@ corrplot.mixed(cor(data.cor), lower.col="black", upper = "ellipse", tl.col = "bl
 ```
 
 ## Correlation Chart 
-```{r, echo=FALSE, warning = FALSE}
+```{r, echo=FALSE, warning = FALSE, message = FALSE}
 library(PerformanceAnalytics)
 chart.Correlation(data.cor, histogram = TRUE, pch = 19)
 ```
-The above two plots display the correlations between our continuous variables in our dataset. Correlations with no X's are significant correlations (or ones with asterisks). Focusing on the *investment portfolio return (invs_return)* and *average lottery return Lot_return_avg* variables, we see many significant correlations with other variables. Average lottery return had a very strong positive correlation (1.00) with Lot2, the amount invested in a high risk, high return lottery, and also had a significant weak positive correlation with moodchange (0.13), indicating how much a participant's mood improved. The investment portfolio return had a strong positive correlation (0.88) with invs_B,  a high-risk high-return security, a strong negative correlation (-0.83) with invs_c, a security that was risk-free but had low returns, and also had a weak positive correlation (0.13) with moodchange. Interestingly, the frequency people's bank account was overdrawn and mood before the investment exercise did not significantly impact their investment portfolio or lottery returns.
 
-*Overall, this suggests that people who invested 1% more in the riskier lotteries / securities had 0.88% and 1% higher expected investment portfolio and average lottery returns, respectively. Furthermore, people who had got happier by 1 more point on the happiness scale had a 0.13% higher return in both lotteries and portfolios. Looking at the left side of the correlation chart, these correlations look more or less linear, which makes them appropriate for linear regression later on.*
+The above two plots display the correlations between our continuous variables in our dataset. Correlations with no X's are significant correlations (or ones with asterisks). Focusing on the **investment portfolio return (invs_return)** and **average lottery return Lot_return_avg** variables, we see many significant correlations with other variables. Average lottery return had a very strong positive correlation (1.00) with Lot2, the amount invested in a high risk, high return lottery, and also had a significant weak positive correlation with moodchange (0.13), indicating how much a participant's mood improved. The investment portfolio return had a strong positive correlation (0.88) with invs_B,  a high-risk high-return security, a strong negative correlation (-0.83) with invs_c, a security that was risk-free but had low returns, and also had a weak positive correlation (0.13) with moodchange. Interestingly, the frequency people's bank account was overdrawn and mood before the investment exercise did not significantly impact their investment portfolio or lottery returns.
+
+**Overall, this suggests that people who invested 1% more in the riskier lotteries / securities had 0.88% and 1% higher expected investment portfolio and average lottery returns, respectively. Furthermore, people who had got happier by 1 more point on the happiness scale had a 0.13% higher return in both lotteries and portfolios. Looking at the left side of the correlation chart, these correlations look more or less linear, which makes them appropriate for linear regression later on.**
 
 Is riskiness truly as strong of a predictor of return as it appears? We ran a bootstrap to find out! 
 
 ## Bootstrap Test
-set.seed(230)
-
-(cor1test <- cor.test(data$invs_A, data$invs_B, conf.level = .95))
-
-N <- nrow(data)
-
-n_samp <- 10000
-
-corResults <- rep(NA, n_samp)
-
-for(i in 1:n_samp){
-  s <- sample(1:N, N, replace = T)
-  fakedata <-  data[s, ]
-  corResults[i] <- cor(fakedata$invs_A, fakedata$invs_B)
-}
-
-(ci_r <- quantile(corResults, c(.025, .975)))
-
-hist(corResults, xlab = "Sample Correlation",
-     main = "Bootstrapped Correlation",
-     col = "deepskyblue4",
-     breaks = 50)
-abline(v = ci_r, lwd = 3, col = "cadetblue2")
-abline(v = cor1test$conf.int, lwd = 3, col = "darkgoldenrod1", lty = 2)
-legend("topleft", c("Theoretical CI", "Boot CI"), 
-       lwd = 3, col = c("darkgoldenrod1", "cadetblue2"), 
-       bg = "white", lty = c(2, 1))
-```
-## Permutation Test
 
 ```{r}
 ttest1 <- t.test(data$Lot_avg ~ data$gender, conf.level = 0.99)
