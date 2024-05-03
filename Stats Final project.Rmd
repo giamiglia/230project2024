@@ -106,7 +106,6 @@ data <- data[,-13]
 data <- data[,-14]
 data <- data[,-15]
 data <- data[,-16]
-data <- data[,-17]
 
 ```
 
