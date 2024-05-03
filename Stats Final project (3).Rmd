@@ -395,6 +395,34 @@ The above two plots display the correlations between our continuous variables in
 Is riskiness truly as strong of a predictor of return as it appears? We ran a bootstrap to find out! 
 
 ## Bootstrap Test
+set.seed(230)
+
+(cor1test <- cor.test(data$invs_A, data$invs_B, conf.level = .95))
+
+N <- nrow(data)
+
+n_samp <- 10000
+
+corResults <- rep(NA, n_samp)
+
+for(i in 1:n_samp){
+  s <- sample(1:N, N, replace = T)
+  fakedata <-  data[s, ]
+  corResults[i] <- cor(fakedata$invs_A, fakedata$invs_B)
+}
+
+(ci_r <- quantile(corResults, c(.025, .975)))
+
+hist(corResults, xlab = "Sample Correlation",
+     main = "Bootstrapped Correlation",
+     col = "deepskyblue4",
+     breaks = 50)
+abline(v = ci_r, lwd = 3, col = "cadetblue2")
+abline(v = cor1test$conf.int, lwd = 3, col = "darkgoldenrod1", lty = 2)
+legend("topleft", c("Theoretical CI", "Boot CI"), 
+       lwd = 3, col = c("darkgoldenrod1", "cadetblue2"), 
+       bg = "white", lty = c(2, 1))
+```
 
 ```{r}
 ttest1 <- t.test(data$Lot_avg ~ data$gender, conf.level = 0.99)
