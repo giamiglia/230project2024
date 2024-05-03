@@ -419,7 +419,37 @@ legend("topleft", c("Theoretical CI", "Boot CI"),
        lwd = 3, col = c("darkgoldenrod1", "cadetblue2"), 
        bg = "white", lty = c(2, 1))
 ```
+# Permutation Test
 
+```{r, echo=FALSE}
+set.seed(230)
+
+N <- 10000
+
+diff <- rep(NA, N)
+
+for(i in 1:N){
+  fakeseason <- sample(songs$season)
+  diff[i] <- median(songs$danceability[fakeseason == "S/S"]) - 
+    median(songs$danceability[fakeseason == "F/W"])
+}
+hist(diff,
+     main = "Permuted Sample Median Differences in BLANK",
+     xlab = "Danceability",
+     col = "aquamarine",
+     breaks = 20)
+
+actualdiff <- median(songs$danceability[songs$season == "S/S"]) - 
+    median(songs$danceability[songs$season == "F/W"])
+
+text(actualdiff - .01, 800, paste("Actual Diff in Medians =", round(actualdiff,2)), srt = 90, cex = .7)
+abline(v = actualdiff,
+       col = "maroon",
+       lwd = 3)
+
+mean(abs(diff) >= abs(actualdiff))
+
+```
 
 ```{r}
 ttest1 <- t.test(data$Lot_avg ~ data$gender, conf.level = 0.99)
