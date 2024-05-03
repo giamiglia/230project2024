@@ -423,6 +423,7 @@ legend("topleft", c("Theoretical CI", "Boot CI"),
        lwd = 3, col = c("darkgoldenrod1", "cadetblue2"), 
        bg = "white", lty = c(2, 1))
 ```
+## Permutation Test
 
 ```{r}
 ttest1 <- t.test(data$Lot_avg ~ data$gender, conf.level = 0.99)
