@@ -1,0 +1,490 @@
+---
+title: "Grooves & Gains: What music should you listen to when investing your $$$"
+author: "Olive Oil Mashed Potatoes"
+date: "2023-04-27"
+geometry: margin = 1.5cm
+output:
+  pdf_document:
+    toc: yes
+    number_sections: yes
+    toc_depth: 3
+  word_document:
+    toc: yes
+    toc_depth: '3'
+urlcolor: blue
+fontsize : 10pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+```
+
+# Introduction
+Financial decisions involve uncertainty, meaning they can lead to either gains or losses (Levy, 2016). The context in which these decisions occur can affect how people behave. Factors like our thought processes and mood play a role in how we make financial choices and handle risk. Music, for instance, can significantly impact our mood (Dillman Carpentier and Potter, 2007; Husain et al., 2002; Thompson et al., 2001).
+
+People often listen to music while doing various tasks, including making financial decisions. Research indicates that background music can influence both our thinking and behavior. For instance, the tempo of music can affect how quickly customers act (North and Hargreaves, 2009), and soothing music might boost overall cognitive performance (Cockerton et al., 1997). However, background music can also overload our mental capacity, leading to decreased efficiency (Thompson et al., 2012), especially when the task and music require processing in the same way.
+
+Specific genres and tempos can have different effects. For instance, fast-paced and loud music, including certain types of classical music, garage music, and hip hop, can impair reading comprehension (Thompson et al., 2012; Furnham and Strbac, 2002; Chou, 2010).\\
+
+Understanding how music influences financial decisions is crucial for financial institutions, investors, and others in high-risk fields.
+
+In this report, we analyze the factors affecting risk-taking in financial decisions and explore music-related strategies to improve decision-making and increase investment success.
+
+# Data
+In this report, we utilized a behavioral questionnaire dataset from a study conducted on individuals related to music and financial risk taking. The variables of relevance include:
+
++ **Group:** Categorical. The type of music played for the subject. 0= Slow tempo, 1=Fast tempo, 2= No music. 
++ **Mood before:** Categorical. Subjects chose between 10 options that best represent their mood prior to study.  
++ **Lot1-3:** Continuous. Numerical value representing the subjects performance on the lottery task of the study.
++ **Inv A-C:** Continuous. Numerical value representing the subjects performance on the portfolio-diversification task of the study. 
++ **Age:** Continuous. Subjects age in years. 
++ **Gender:** Categorical. Subjects gender. 0=Male, 1=Female. 
++ **Marital:** Categorical. Subjects marital status. 1=single, 2=Married, 3=  Divorced, 4=Widowed, 5= Separated. 
++ **Kids_no:** Continuous. Subjects number of children.
++ **Birth_order:** Continuous. Position in family.
++ **Residence:** Place of residence.
++ **Religion:** Religion status.
++ **Overdradt:** Often current bank account overdrawn.
++ **Mood after:** Categorical. Subjects chose between 10 options that best represent their mood after studying.
++ **music_rec:** Categorical. Is the music playing in the background familiar to the subject?
++ **music_like:** Categorical. Did the subject like the music?
++ **music_help:** Categorical. Does the subject think the music helped or disturbed them while they filled out the questionnaire?
++ **music_effect:** Categorical. How did the music affect the subjects concentration?\\
++ **Earning:** Categorical. Does the subject have hearing problems?
+
+```{r}
+data <- read.csv("https://github.com/giamiglia/230project2024/raw/main/230finaldata.csv", sep = ";")
+names(data)
+```
+
+# Data Cleaning and Variable Creation
+
+**Main Issues in Dataset:**
+
+- **NA Values:** Variables such as **Lot1** had NA values instead of 0s.
+- **Binary Categories:** Categorical variables like **Gender** used binary (0 or 1) inputs instead of text.
+- **Variables with Limited Insight:** Variables like **InvA** ("coins" invested in security A) that do not reveal much about investment habits.
+- **Grammatical and Format Issues:** Issues such as **Age** not being in numerical format.
+
+**Data Cleaning Steps:**
+
+- **Handling NA Values:** Ran code to identify NA values in variable columns and replaced with '0'.
+- **Data Type Conversion:** Used `as.numeric()` function to change numbers to numerical format.
+- **Creating New Variables:** Created new variables such as **invs_return**, calculating expected return of participants' investments using `rowSums()` and `rowMeans()`.
+- **Correcting Variable Names:** Ran code that identified and replaced misspelled variable names with corrected names.
+
+```{r include=FALSE}
+#replace NA with 0, remove non-numeric values
+data$Lot1 <- as.numeric(data$Lot1)
+data$Lot1[is.na(data$Lot1)] <- 0
+data$Lot2[is.na(data$Lot2)] <- 0
+data$Lot3[is.na(data$Lot3)] <- 0
+data$invs_A[is.na(data$invs_A)] <- 0
+data$invs_B[is.na(data$invs_B)] <- 0
+data$invs_C[is.na(data$invs_C)] <- 0
+
+#renaming misspelled variables
+names(data)[names(data) == "earing"] <- "hearingproblems"
+names(data)[names(data) == "Overdradt"] <- "overdraft"
+
+#making sure numbers are numerical entries
+data$Age <- as.numeric(data$Age)
+data$Lot1 <- as.numeric(data$Lot1)
+
+#creating new categorical variables that clarify numerical entries
+data$gender <- c("Male", "Female")[data$Gender + 1]
+data$musictype <- c("Slow", "Fast", "None")[data$Group +1]
+data$maritalstatus <- c("Single", "Married", "Divorced", "Widowed", "Separated")[data$Marital]
+
+#creating delta categories vivian mentioned
+data$moodchange <- data$Mood.after - data$Mood.before
+
+#creating expected return categories
+data$Lot1_return <- (data$Lot1 * (0.5 * 0.3 + 0.5 * 0.05)) + ((100 - data$Lot1) * 0.1)
+data$Lot2_return <- (data$Lot2 * (0.5 * 0.21 + 0.5 * -0.04)) + ((100 - data$Lot1) * 0.01)
+data$Lot3_return <- (data$Lot2 * (0.5 * 0.25)) + ((100 - data$Lot1) * 0.05)
+data$invs_return <- 0.1 * (data$invs_A * (0.5 * 0.08 + 0.5 * 0.12) +
+                       data$invs_B * (0.5 * 0.04 + 0.5 * 0.24) +
+                       data$invs_C * (0.05))
+
+#Creating average category across 3 lotteries
+data$Lot_avg <- rowMeans(data[, 4:6])
+data$Lot_return_avg <- rowMeans(data[, 28:30])
+
+#creating portfolio diversification category
+data$invs_num <- rowSums(data[, 7:9] > 0)
+
+#remove irrelevant categories since we have so many e.g. number of kids, birth order, residence, religion, and overdraft
+data <- data[,-(13:16)]
+
+names(data)
+```
+
+# Plots
+```{r out.width="70%", fig.align='center'}
+#Plots of lottery by gender
+par(mfrow = c(1,3))
+boxplot(data$Lot1 ~ data$gender, col = c("powderblue", "deepskyblue4"),
+        main = "Lottery 1", xlab = "Gender", ylab = "% Invested in Risky Asset")
+boxplot(data$Lot2 ~ data$gender, col = c("powderblue", "deepskyblue4"),
+        main = "Lottery 2", xlab = "Gender", ylab = "% Invested in Risky Asset")
+boxplot(data$Lot3 ~ data$gender, col = c("powderblue", "deepskyblue4"),
+        main = "Lottery 3", xlab = "Gender", ylab = "% Invested in Risky Asset")
+
+(test_lotavg_gender <- t.test(data$Lot_avg ~ data$gender, conf.level = 0.95))
+
+```
+
+Based on these boxplots we observe that in lottery 1, 2 and 3, Females tend to invest a lower percentage (around 40%) in the risky asset compared to males (around 80%). The pattern is consistent across all three lotteries, indicating that males tend to invest a higher percentage in the risky asset compared to females. Additionally, the p-value is extremely small (0.000029), which suggests that the difference in means between the Female and Male groups is statistically significant. The 95% confidence interval for the difference in means is (-12.23, -4.47), which does not include 0. This further confirms that the means are significantly different between the two groups. The sample estimates show that the mean "lot_avg" for the Female group is 67.70, while for the Male group, it is 76.05. This aligns with the boxplot observations, where males tend to invest a higher percentage in the risky asset compared to females. Overall, both the boxplots and the t-test results indicate a significant difference in the investment behavior between males and females, with males investing a higher percentage in the risky asset compared to females across the three lotteries.
+
+```{r out.width="70%", fig.align='center'}
+#Lottery by music type
+par(mfrow = c(1,2))
+boxplot(data$Lot_avg[data$gender == "Male"] ~ data$musictype[data$gender == "Male"],
+        col = "darkseagreen",
+        main = "Risky Investment vs Music Type, Male", 
+        xlab = "Music Type", 
+        ylab = "% Invested in Risky Asset",
+        cex.main = 0.7)
+boxplot(data$Lot_avg[data$gender == "Female"] ~ data$musictype[data$gender == "Female"],
+        col = "darkseagreen1",
+        main = "Risky Investment vs Music Type, Female", 
+        xlab = "Music Type", 
+        ylab = "% Invested in Risky Asset",
+        cex.main = 0.7)
+```
+
+The boxplots display the relationship between music type (Fast, None, Slow) and the percentage invested in a risky asset, separately for males and females. For males: those who listened to slow music tended to invest the highest percentage (around 80-90%) in the risky asse, those who listened to no music invested a slightly lower percentage (around 60-80%) compared to slow music, and those who listened to fast music invested the lowest percentage (around 40-60%) in the risky asset. For females, the overall percentage invested in the risky asset is lower compared to males across all music types, similar to males those who listened to slow music tended to invest the highest percentage (around 60-80%) in the risky asset, and those who listened to no music or fast music invested lower percentages, with considerable overlap between the two groups (around 40-60%). Overall, for both genders, listening to slow music was associated with higher risk-taking behavior in terms of investment allocation compared to fast music or no music conditions. Additionally, females generally exhibited lower risk-taking behavior across all music types compared to males. These findings suggest that the type of music an individual listens to may influence their risk preferences and investment decisions, with slow music potentially promoting higher risk-taking tendencies, especially among males.
+
+```{r out.width="70%", fig.align='center'}
+#Investment Diversification by music type
+par(mfrow = c(1,2))
+boxplot(data$invs_num[data$gender == "Male"] ~ data$musictype[data$gender == "Male"],
+        col = "darkseagreen",
+        main = "Portfolio Diversity vs Music Type, Male", 
+        xlab = "Music Type", 
+        ylab = "Number of Securities in Portfolio",
+        cex.main = 0.7)
+boxplot(data$invs_num[data$gender == "Female"] ~ data$musictype[data$gender == "Female"],
+        col = "darkseagreen1",
+        main = "Portfolio Diversity vs Music Type, Female", 
+        xlab = "Music Type", 
+        ylab = "Number of Securities in Portfolio",
+        cex.main = 0.7)
+```
+
+Based on the boxplots, for males, we observe that those who listened to fast music or no music had similar levels of portfolio diversity, with the median around 2.0-2.5 securities in their portfolio, while those who listened to slow music appeared to have slightly higher portfolio diversity, with the median around 3.0 securities. However, there is an outlier in the slow music group with a very high number of securities (around 6.0). For females, the distribution of portfolio diversity is very similar across all three music types (fast, none, slow), with the median portfolio diversity around 2.0-2.5 securities for all three groups, and little variation or difference is observed based on the music type for females. Overall, for males, listening to slow music seems to be associated with slightly higher portfolio diversity compared to fast music or no music conditions. However, this effect is not evident for females, where portfolio diversity appears to be unrelated to the type of music.
+
+```{r out.width="70%", fig.align='center'}
+#Lottery Returns by music type
+par(mfrow = c(1,2))
+boxplot(data$Lot_return_avg[data$gender == "Male"] ~ data$musictype[data$gender == "Male"],
+        col = "darkseagreen",
+        main = "Average Lottery Return vs Music Type, Male", 
+        xlab = "Music Type", 
+        ylab = "% Return on Investment",
+        cex.main = 0.7)
+boxplot(data$Lot_return_avg[data$gender == "Female"] ~ data$musictype[data$gender == "Female"],
+        col = "darkseagreen1",
+        main = "Average Lottery Return vs Music Type, Female", 
+        xlab = "Music Type", 
+        ylab = "% Return on Investment",
+        cex.main = 0.7)
+```
+
+Based on the boxplots illustrating the average lottery return across different music types for males and females, we observe the following for males: those who listened to slow music tended to have the highest average lottery returns, with the median around 12-13%; those who listened to no music had slightly lower average returns compared to slow music, with the median around 10-11%; and those who listened to fast music had the lowest average lottery returns, with the median around 8-9%. For females, the distribution of average lottery returns is more compressed compared to males across all music types. Those who listened to slow music also tended to have the highest average returns, with the median around 10-11%. There is considerable overlap in the distributions for those who listened to fast music or no music, with the medians around 9-10%. Overall, for both males and females, listening to slow music was associated with higher average lottery returns compared to fast music or no music conditions. This trend is more pronounced for males, where the differences in median returns across music types are larger. These findings align with the previous observations on risky asset allocation, where slow music was linked to higher risk-taking behavior, potentially leading to higher returns on average from the lottery investment.
+
+```{r out.width="70%", fig.align='center'}
+#Investment Returns by music type
+par(mfrow = c(1,2))
+boxplot(data$invs_return[data$gender == "Male"] ~ data$musictype[data$gender == "Male"],
+        col = "darkseagreen",
+        main = "Portfolio Return vs Music Type, Male", 
+        xlab = "Music Type", 
+        ylab = "% Return on Investment",
+        cex.main = 0.7)
+boxplot(data$invs_return[data$gender == "Female"] ~ data$musictype[data$gender == "Female"],
+        col = "darkseagreen1",
+        main = "Portfolio Return vs Music Type, Female", 
+        xlab = "Music Type", 
+        ylab = "% Return on Investment",
+        cex.main = 0.7)
+
+
+```
+
+Based on the boxplots illustrating the average portfolio return across different music types for males and females, we observe the following for males: those who listened to fast music had a median return around 10% and a relatively narrow interquartile range (IQR), indicating low variability in returns. Those with no music had a median return slightly lower at around 9% and a relatively wider IQR, spanning from approximately 7% to 11.5%, suggesting higher variability. Those who listened to slow music had a median return similar to no music at around 9% but a relatively wider IQR, ranging from roughly 6.5% to 12%, indicating the highest variability among the three music types, and there are no apparent outliers for males across the music types. For females, we observe: those who listened to fast music had a median return around 10%, similar to males, and the IQR is relatively narrow, indicating low variability. Those who listened to no music had a median return slightly lower at around 9.5%, and a relatively wider IQR, spanning from approximately 8% to 11%, suggesting higher variability compared to fast music. Those who listened to slow music had a median return higher at around 11.5%, but the IQR is the widest, ranging from roughly 8% to 13%, indicating the highest variability among the three music types for females, and there are potential outliers observed in the "no music" and "slow music" conditions for females, represented by the dots below the whiskers. Overall, while median returns are generally similar across music types for both genders, the variability in returns tends to be higher with no music and even higher with slow music, especially for females. Additionally, females appear to have a slightly higher median return with slow music compared to the other conditions.
+
+```{r out.width="70%", fig.align='center'}
+#moodchange by music type
+par(mfrow = c(1,2))
+boxplot(data$moodchange[data$gender == "Male"] ~ data$musictype[data$gender == "Male"],
+        col = "darkseagreen",
+        main = "Mood Change vs Music Type, Male", 
+        xlab = "Music Type", 
+        ylab = "Mood Change",
+        cex.main = 0.7)
+boxplot(data$moodchange[data$gender == "Female"] ~ data$musictype[data$gender == "Female"],
+        col = "darkseagreen1",
+        main = "Mood Change vs Music Type, Female", 
+        xlab = "Music Type", 
+        ylab = "Mood Change",
+        cex.main = 0.7)
+```
+
+These boxplots illustrate the distribution of mood changes across different music types (fast, none, and slow) separately for males and females. For males, the median mood change remains consistently at 0 across all music conditions, with the interquartile ranges (IQRs) ranging from approximately -1 to 0.5 for fast music, -0.5 to 0.75 for no music, and -0.25 to 1 for slow music. This suggests that the type of music does not significantly impact mood for males overall, although there is slightly higher variability with slow music, as indicated by the wider IQR and the presence of outliers around 2.5 and -1.5. In contrast, for females, slow music appears to be associated with a positive median mood change of around 0.5 compared to around 0 for no music and -0.5 for fast music. Additionally, females exhibit greater variability than males, with the IQR for slow music spanning from -0.5 to 1.5 and outliers around 2 and -3. The wider distributions and more extreme outliers for females, especially with slow music, indicate greater individual variability in mood responses, which could be influenced by personal preferences or other factors not captured in this data.
+
+```{r out.width="70%", fig.align='center'}
+#musiclike by music type
+par(mfrow = c(1,2))
+boxplot(data$music_like[data$gender == "Male"] ~ data$musictype[data$gender == "Male"],
+        col = "darkseagreen",
+        main = "Music Rating vs Music Type, Male", 
+        xlab = "Music Type", 
+        ylab = "Rating (1-3 scale)",
+        cex.main = 0.7)
+boxplot(data$music_like[data$gender == "Female"] ~ data$musictype[data$gender == "Female"],
+        col = "darkseagreen1",
+        main = "Music Rating vs Music Type, Female", 
+        xlab = "Music Type", 
+        ylab = "Rating (1-3 scale)",
+        cex.main = 0.7)
+
+```
+
+These boxplots depict the distribution of music ratings provided by males and females for fast and slow music types. For males, the median rating for fast music is around 1.5 on the provided scale, with the interquartile range (IQR) spanning from approximately 1.0 to 2.0. In contrast, the median rating for slow music is higher at 2.5, and the IQR is wider, ranging from roughly 2.0 to 3.0, indicating greater variability in ratings for slow music compared to fast music. Notably, no outliers are observed for males in either music condition. Turning to females, the median rating for fast music is similar to that of males, around 1.5, with a relatively narrow IQR from approximately 1.0 to 2.0. However, for slow music, the distribution is quite different. The median rating is lower than for fast music, around 1.5, and there is the presence of an outlier around 3.0. This outlier suggests that while most females rated slow music lower than fast music, some rated it substantially higher. Overall, the data indicates that males tend to prefer and exhibit less variability in their ratings for slow music, while females generally rate fast music higher but with a wider range of individual preferences for slow music.
+
+```{r out.width="70%", fig.align='center'}
+#Lottery Returns by moodchange 
+#(idea was correlation between music you like vs success of investment, BUT PROBLEM is moodchange can be positively correlated with investment return for other reasons lol so idk abt this one what do yall think)
+par(mfrow = c(1,2))
+plot(data$moodchange[data$gender == "Male"], 
+     data$Lot_return_avg[data$gender == "Male"],
+     main = "Average Lottery Returns vs Mood Change, Male",
+     xlab = "Mood Change",
+     ylab = "% Average Lottery Returns",
+     col = "dodgerblue",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$Lot_return_avg[data$gender == "Male"] ~ data$moodchange[data$gender == "Male"]), 
+       col = "red")
+plot(data$moodchange[data$gender == "Female"], 
+     data$Lot_return_avg[data$gender == "Female"],
+     main = "Average Lottery Returns vs Mood Change, Female",
+     xlab = "Mood Change",
+     ylab = "% Average Lottery Returns",
+     col = "dodgerblue4",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$Lot_return_avg[data$gender == "Female"] ~ data$moodchange[data$gender == "Female"]), 
+       col = "red")
+```
+
+These scatterplots display the relationship between average lottery returns and mood change, one for males and the other for females. For males, the scatterplot shows average lottery returns ranging from around 6 to 13 across different mood change values from -2 to 3. There is no clear trend, with points scattered randomly across the range of mood changes. For females, the average lottery returns range from around 6 to 11.5. There is a distinct positive linear trend visible, with the line of best fit sloping upwards from left to right. As the mood change increases from around -4 to 2, the average lottery returns tend to increase correspondingly. The spread of points is slightly tighter for females compared to males, indicating potentially less variability in lottery returns for a given mood change level among females. Overall, the difference in the distributions between males and females implies that the relationship between mood change and lottery returns may be influenced by gender. While mood change does not seem to affect lottery returns for males significantly, it appears to have a positive impact for females, with better moods leading to higher returns.
+
+```{r out.width="70%", fig.align='center'}
+#Investment Returns by moodchange
+par(mfrow = c(1,2))
+plot(data$moodchange[data$gender == "Male"], 
+     data$invs_return[data$gender == "Male"],
+     main = "Average Portfolio Returns vs Mood Change, Male",
+     xlab = "Mood Change",
+     ylab = "% Average Portfolio Returns",
+     col = "dodgerblue",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$invs_return[data$gender == "Male"] ~ data$moodchange[data$gender == "Male"]), 
+       col = "red")
+plot(data$moodchange[data$gender == "Female"], 
+     data$invs_return[data$gender == "Female"],
+     main = "Average Portfolio Returns vs Mood Change, Female",
+     xlab = "Mood Change",
+     ylab = "% Average Portfolio Returns",
+     col = "dodgerblue4",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$invs_return[data$gender == "Female"] ~ data$moodchange[data$gender == "Female"]), 
+       col = "red")
+```
+
+These scatterplots display the relationship between average portfolio returns and mood change, one for males and the other for females. For males, the scatterplot shows average portfolio returns ranging from approximately 6 to 14 across different mood change values from -2 to 3. There is no clear trend or pattern visible, with the points scattered randomly across the range of mood changes. This suggests that mood change does not have a significant impact on portfolio returns for males. On the other hand, for females, the average portfolio returns range from around 6 to 12. There is a distinct positive linear trend visible, with the line of best fit sloping upwards from left to right. As the mood change increases from around -4 to 2, the average portfolio returns tend to increase correspondingly. This relationship appears to be relatively strong, indicating that more positive mood changes are associated with higher average portfolio returns for females. The spread of points is slightly tighter for females compared to males, suggesting potentially less variability in portfolio returns for a given mood change level among females. While the overall trend for females is positive, there is still some variation in the data points around the line of best fit, implying that mood change alone does not correlate with portfolio returns. Overall, while mood change does not seem to significantly impact portfolio returns for males based on this scatterplot, for females, more positive mood changes are associated with higher average portfolio returns in a linear fashion across the range of observed mood change values. The relationship between mood change and portfolio returns appears to be more pronounced and consistent for females compared to males.
+
+```{r out.width="70%", fig.align='center'}
+#Lottery Returns by Music rating
+par(mfrow = c(1,2))
+plot(data$music_like[data$gender == "Male"], 
+     data$Lot_return_avg[data$gender == "Male"],
+     main = "Average Lottery Returns vs Music Rating, Male",
+     xlab = "Music Rating (1-3 Scale)",
+     ylab = "% Average Lottery Returns",
+     col = "dodgerblue",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$Lot_return_avg[data$gender == "Male"] ~ data$music_like[data$gender == "Male"]), 
+       col = "red")
+plot(data$music_like[data$gender == "Female"], 
+     data$Lot_return_avg[data$gender == "Female"],
+     main = "Average Lottery Returns vs Music Rating, Female",
+     xlab = "Music Rating (1-3 Scale)",
+     ylab = "% Average Lottery Returns",
+     col = "dodgerblue4",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$Lot_return_avg[data$gender == "Female"] ~ data$music_like[data$gender == "Female"]), 
+       col = "red")
+```
+
+These scatterplots display the relationship between average lottery returns and music ratings on a 1-3 scale, one for males and the other for females. For males, the average lottery returns range from around 6 to 13 across different music rating values from 1.0 to 3.0. There is a positive linear trend visible, with the line of best fit sloping upwards from left to right. As the music rating increases from 1.0 to 3.0, the average lottery returns tend to increase correspondingly. This suggests that higher music ratings are associated with higher lottery returns for males.For females, the average lottery returns range from around 6 to 12.5. There is also a positive linear trend visible, with the line of best fit sloping upwards from left to right. As the music rating increases from 1.0 to around 2.5, the average lottery returns tend to increase. However, the relationship appears to be weaker for females compared to males, as the points are more scattered around the line of best fit. The spread of points is slightly tighter for females compared to males, suggesting potentially less variability in lottery returns for a given music rating level among females.While the overall trends are positive for both genders, there is still some variation in the data points around the lines of best fit, implying that music ratings alone may not fully explain the lottery returns, and other factors could also be at play. Overall, higher music ratings are associated with higher average lottery returns for both males and females, with the relationship appearing stronger and more consistent for males compared to females based on these scatterplots. However, the positive trend is present for both genders across the range of observed music rating values.
+
+```{r out.width="70%", fig.align='center'}
+#Portfolio Returns by Music rating
+par(mfrow = c(1,2))
+plot(data$music_like[data$gender == "Male"], 
+     data$invs_return[data$gender == "Male"],
+     main = "Average Portfolio Returns vs Music Rating, Male",
+     xlab = "Music Rating (1-3 Scale)",
+     ylab = "% Average Portfolio Returns",
+     col = "dodgerblue",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$invs_return[data$gender == "Male"] ~ data$music_like[data$gender == "Male"]), 
+       col = "red")
+plot(data$music_like[data$gender == "Female"], 
+     data$invs_return[data$gender == "Female"],
+     main = "Average Portfolio Returns vs Music Rating, Female",
+     xlab = "Music Rating (1-3 Scale)",
+     ylab = "% Average Portfolio Returns",
+     col = "dodgerblue4",
+     pch = 16,
+     cex.main = 0.7)
+abline(lm(data$invs_return[data$gender == "Female"] ~ data$music_like[data$gender == "Female"]), 
+       col = "red")
+```
+
+These scatterplots dispolay the relationship between average portfolio returns and music ratings on a 1-3 scale, one for males and the other for females. For males, the average portfolio returns range from around 6 to 14 across different music rating values from 1.0 to 3.0. There is no clear trend or pattern visible, with the points scattered randomly across the range of music ratings. This suggests that music ratings do not have a significant impact on portfolio returns for males. For females, the average portfolio returns range from around 6 to 12. There is a positive linear trend visible, with the line of best fit sloping upwards from left to right. As the music rating increases from 1.0 to 3.0, the average portfolio returns tend to increase correspondingly. This relationship appears to be relatively strong, indicating that higher music ratings are associated with higher average portfolio returns for females. The spread of points is slightly tighter for females compared to males, suggesting potentially less variability in portfolio returns for a given music rating level among females. While the overall trend for females is positive, there is still some variation in the data points around the line of best fit, implying that music ratings alone may not fully explain the portfolio returns, and other factors could also be at play. Overall, while music ratings do not seem to significantly impact portfolio returns for males based on this scatterplot, for females, higher music ratings are associated with higher average portfolio returns in a linear fashion across the range of observed music rating values. The relationship between music ratings and portfolio returns appears to be more pronounced and consistent for females compared to males.
+
+## Correlations Plot
+We ran these following plots to visually see the correlations and significance values.
+```{r, echo=FALSE, warning = FALSE, message = FALSE, fig.align = "center"}
+library(car)
+library(corrplot)
+source("http://www.reuningscherer.net/s&ds230/Rfuncs/regJDRS.txt")
+data.cor <- data[ , c("invs_return", "Lot_return_avg", "Lot1", "Lot2", "Lot3", "invs_A", "invs_B", "invs_C", "overdraft", "moodchange", "Mood.before")]
+
+sigcorr <- cor.mtest(data.cor, conf.level = .95)
+corrplot.mixed(cor(data.cor), lower.col="black", upper = "ellipse", tl.col = "black", number.cex=.7, 
+                tl.pos = "lt", tl.cex=.7, p.mat = sigcorr$p, sig.level = .05)
+
+```
+
+## Correlation Chart 
+```{r, echo=FALSE, warning = FALSE, message = FALSE}
+library(PerformanceAnalytics)
+chart.Correlation(data.cor, histogram = TRUE, pch = 19)
+```
+
+The above two plots display the correlations between our continuous variables in our dataset. Correlations with no X's are significant correlations (or ones with asterisks). Focusing on the **investment portfolio return (invs_return)** and **average lottery return Lot_return_avg** variables, we see many significant correlations with other variables. Average lottery return had a very strong positive correlation (1.00) with Lot2, the amount invested in a high risk, high return lottery, and also had a significant weak positive correlation with moodchange (0.13), indicating how much a participant's mood improved. The investment portfolio return had a strong positive correlation (0.88) with invs_B,  a high-risk high-return security, a strong negative correlation (-0.83) with invs_c, a security that was risk-free but had low returns, and also had a weak positive correlation (0.13) with moodchange. Interestingly, the frequency people's bank account was overdrawn and mood before the investment exercise did not significantly impact their investment portfolio or lottery returns.
+
+**Overall, this suggests that people who invested 1% more in the riskier lotteries / securities had 0.88% and 1% higher expected investment portfolio and average lottery returns, respectively. Furthermore, people who had got happier by 1 more point on the happiness scale had a 0.13% higher return in both lotteries and portfolios. Looking at the left side of the correlation chart, these correlations look more or less linear, which makes them appropriate for linear regression later on.**
+
+Is riskiness truly as strong of a predictor of return as it appears? We ran a bootstrap to find out! 
+
+## Bootstrap Test
+```{r}
+set.seed(230)
+
+(cor1test <- cor.test(data$invs_A, data$invs_B, conf.level = .95))
+
+N <- nrow(data)
+
+n_samp <- 10000
+
+corResults <- rep(NA, n_samp)
+
+for(i in 1:n_samp){
+  s <- sample(1:N, N, replace = T)
+  fakedata <-  data[s, ]
+  corResults[i] <- cor(fakedata$invs_A, fakedata$invs_B)
+}
+
+(ci_r <- quantile(corResults, c(.025, .975)))
+
+hist(corResults, xlab = "Sample Correlation",
+     main = "Bootstrapped Correlation",
+     col = "deepskyblue4",
+     breaks = 50)
+abline(v = ci_r, lwd = 3, col = "cadetblue2")
+abline(v = cor1test$conf.int, lwd = 3, col = "darkgoldenrod1", lty = 2)
+legend("topleft", c("Theoretical CI", "Boot CI"), 
+       lwd = 3, col = c("darkgoldenrod1", "cadetblue2"), 
+       bg = "white", lty = c(2, 1))
+```
+# Permutation Test
+
+```{r, echo=FALSE}
+set.seed(230)
+
+N <- 10000
+
+diff <- rep(NA, N)
+
+for(i in 1:N){
+  fakeseason <- sample(songs$season)
+  diff[i] <- median(songs$danceability[fakeseason == "S/S"]) - 
+    median(songs$danceability[fakeseason == "F/W"])
+}
+hist(diff,
+     main = "Permuted Sample Median Differences in BLANK",
+     xlab = "Danceability",
+     col = "aquamarine",
+     breaks = 20)
+
+actualdiff <- median(songs$danceability[songs$season == "S/S"]) - 
+    median(songs$danceability[songs$season == "F/W"])
+
+text(actualdiff - .01, 800, paste("Actual Diff in Medians =", round(actualdiff,2)), srt = 90, cex = .7)
+abline(v = actualdiff,
+       col = "maroon",
+       lwd = 3)
+
+mean(abs(diff) >= abs(actualdiff))
+
+```
+
+```{r}
+ttest1 <- t.test(data$Lot_avg ~ data$gender, conf.level = 0.99)
+ttest1
+
+ttest2 <-t.test(data$invs_A ~ data$gender, conf.level = 0.99)
+ttest2
+
+ttest3 <-t.test(data$invs_B ~ data$gender, conf.level = 0.99)
+ttest3
+
+ttest4 <-t.test(data$invs_C ~ data$gender, conf.level = 0.99)
+ttest4
+
+ttest5 <-t.test(data$invs_num ~ data$gender, conf.level = 0.99)
+ttest5
+
+ttest6 <- t.test(data$Lot_return_avg ~ data$gender, conf.level = 0.99)
+ttest6
+
+ttest7 <- t.test(data$invs_return ~ data$gender, conf.level = 0.99)
+ttest7
+
+ttest8 <- t.test(data$moodchange ~ data$gender, conf.level = 0.99)
+ttest8
+
+ttest9 <- t.test(data$music_like ~ data$gender, conf.level = 0.99)
+ttest9
+
+ttest10 <- t.test(data$Lot1_return ~ data$gender, conf.level = 0.99)
+ttest10
+
+ttest11 <- t.test(data$Lot2_return ~ data$gender, conf.level = 0.99)
+ttest11
+
+ttest12 <- t.test(data$Lot3_return ~ data$gender, conf.level = 0.99)
+ttest12
+```
