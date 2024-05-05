@@ -20,15 +20,11 @@ knitr::opts_chunk$set(echo = F)
 ```
 
 # Introduction
-Financial decisions involve uncertainty, meaning they can lead to either gains or losses (Levy, 2016). The context in which these decisions occur can affect how people behave. Factors like our thought processes and mood play a role in how we make financial choices and handle risk. Music, for instance, can significantly impact our mood (Dillman Carpentier and Potter, 2007; Husain et al., 2002; Thompson et al., 2001).
+Research has shown that the presence of music can significantly influence our cognitive abilities as we perform our daily routines For instance, some studies suggest that the tempo of music can impact the pace of customer responses (North and Hargreaves, 2009), while calming melodies may enhance our mental capacities (Cockerton et al., 1997). Music choice ,however, also has the ability to overwhelm our cognitive space, resulting in reduced efficiency (Thompson et al., 2012). This is observed most when both the task and the music demand a similar type of cognitive processing.
 
-People often listen to music while doing various tasks, including making financial decisions. Research indicates that background music can influence both our thinking and behavior. For instance, the tempo of music can affect how quickly customers act (North and Hargreaves, 2009), and soothing music might boost overall cognitive performance (Cockerton et al., 1997). However, background music can also overload our mental capacity, leading to decreased efficiency (Thompson et al., 2012), especially when the task and music require processing in the same way.
+Part of our routines also involve making everyday financial decisions whether its buying groceries or buying stocks. These decisions involve different aspects of uncertainty which can either lead to either fruitful gains or unfortunate losses (Levy, 2016).  
 
-Specific genres and tempos can have different effects. For instance, fast-paced and loud music, including certain types of classical music, garage music, and hip hop, can impair reading comprehension (Thompson et al., 2012; Furnham and Strbac, 2002; Chou, 2010).\\
-
-Understanding how music influences financial decisions is crucial for financial institutions, investors, and others in high-risk fields.
-
-In this report, we analyze the factors affecting risk-taking in financial decisions and explore music-related strategies to improve decision-making and increase investment success.
+In this report, we analyze the factors affecting risk-taking in financial decisions and explore how music-related factors affect our economic decisions and improve decision-making to increase investment success. 
 
 # Data
 In this report, we utilized a behavioral questionnaire dataset from a study conducted on individuals related to music and financial risk taking. The variables of relevance include:
@@ -52,26 +48,20 @@ In this report, we utilized a behavioral questionnaire dataset from a study cond
 + **music_effect:** Categorical. How did the music affect the subjects concentration?\\
 + **Earning:** Categorical. Does the subject have hearing problems?
 
+## Packages Required 
++ **carData** 
++ **timechange** 
++ **libridate** 
++ **olsrr** 
++ **MASS** 
+
 ```{r}
 data <- read.csv("https://github.com/giamiglia/230project2024/raw/main/230finaldata.csv", sep = ";")
 names(data)
 ```
 
 # Data Cleaning and Variable Creation
-
-**Main Issues in Dataset:**
-
-- **NA Values:** Variables such as **Lot1** had NA values instead of 0s.
-- **Binary Categories:** Categorical variables like **Gender** used binary (0 or 1) inputs instead of text.
-- **Variables with Limited Insight:** Variables like **InvA** ("coins" invested in security A) that do not reveal much about investment habits.
-- **Grammatical and Format Issues:** Issues such as **Age** not being in numerical format.
-
-**Data Cleaning Steps:**
-
-- **Handling NA Values:** Ran code to identify NA values in variable columns and replaced with '0'.
-- **Data Type Conversion:** Used `as.numeric()` function to change numbers to numerical format.
-- **Creating New Variables:** Created new variables such as **invs_return**, calculating expected return of participants' investments using `rowSums()` and `rowMeans()`.
-- **Correcting Variable Names:** Ran code that identified and replaced misspelled variable names with corrected names.
+This R code performs data **cleaning** and **transformation** operations on a dataset named "data". Some variables such as **Lot1** had NA values instead of 0s. To fix this, we ran code to identify NA values in the variable columns and replaced NA with '0'. Some of the categorical variables such as **Gender** used binary (0 or 1) rather than text. To fix this, we used `as.numeric()` function to change numbers to numerical format. Some categorical variables like **Gender** used binary (0 or 1) inputs instead of text. To fix this, we created new variables such as **invs_return**, calculating expected return of participants' investments using `rowSums()` and `rowMeans()`. Some variables such as **InvA** ("coins" invested in security A) do not reveal much about investment habits. The **Age** variable was not in numerical format which we corrected. Lastly, we ran code that identified and replaced misspelled variable names with corrected names. 
 
 ```{r include=FALSE}
 #replace NA with 0, remove non-numeric values
