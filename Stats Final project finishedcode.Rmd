@@ -361,7 +361,7 @@ ggplot(data, aes(x = invs_B, y = Lot_return_avg, color = musictype)) +
        y = "Lottery Winnings, %") +
   theme_minimal()
 ```
-
+The plot displays the relationship between lottery winnings and the amount invested in Security B, grouped by different music types. The x-axis represents the amount invested in Security B, ranging from 0 to 1000 units, while the y-axis shows the lottery winnings as a percentage. The data points exhibit substantial variation around each regression line, indicating that there are other factors influencing lottery winnings besides the amount invested in Security B and the music type. This observation suggests that the linear regression model with just the investment in Security B and music type as predictor variables is not sufficient to fully explain the variability in lottery winnings. The scattered data points around the regression lines indicate the presence of other factors or variables that contribute to the variation in lottery winnings but are not accounted for in the current model. At lower investment levels in Security B (around 250 units), the lottery winnings for the "Slow" music type appear to be higher on average compared to the other two music types. However, as the investment in Security B increases (around 750 units), the lottery winnings for the "None" music type tend to be higher on average, while the "Fast" music type falls in between. This observation highlights a non-linear relationship between the variables. At lower investment levels in Security B, participants who listened to slow music seemed to perform better in terms of lottery winnings compared to those who listened to fast music or no music. However, this trend appears to reverse at higher investment levels, where participants who did not listen to any music tended to have higher lottery winnings on average, with the fast music group falling in between the other two groups. This pattern suggests that the effect of music type on lottery winnings may be moderated by the level of investment in Security B. 
 
 ## Correlations Plot
 We ran these following plots to visually see the correlations and significance values.
@@ -376,13 +376,18 @@ corrplot.mixed(cor(data.cor), lower.col="black", upper = "ellipse", tl.col = "bl
                 tl.pos = "lt", tl.cex=.7, p.mat = sigcorr$p, sig.level = .05)
 
 ```
+The positive correlation between Lot_return_avg and invs_return (0.26) suggests that higher overall lottery returns are associated with higher returns from investments in general. Lot1 has the strongest positive correlation with Lot_return_avg (0.42) among the individual lottery variables, indicating that performance in the first lottery round may have a significant influence on the overall average lottery returns. Lot2 and Lot3 have weaker positive correlations with Lot_return_avg (0.36 and 0.39, respectively), implying that later lottery rounds may have a lesser impact on the overall average returns compared to the first round.
+
+The strong positive correlation between invs_B and invs_return (0.88) suggests that investments in Security B are closely tied to overall investment returns. This could indicate that Security B is a high-risk, high-return investment option. invs_B also has a moderate positive correlation with Lot_return_avg (0.31), implying that higher investments in Security B are associated with higher average lottery returns. Conversely, invs_A and invs_C have negative correlations with invs_return (-0.34 and -0.83, respectively) and Lot_return_avg (-0.15 and -0.26, respectively), suggesting that investments in these securities may be associated with lower investment returns and average lottery returns.
+
+The weak positive correlation between moodchange and Lot_return_avg (0.17) indicates that participants who experienced a greater mood change during the experiment tended to have slightly higher average lottery returns, but the effect is relatively small.
+The moderate negative correlation between moodchange and Mood.before (-0.31) suggests that participants with a lower initial mood before the experiment were more likely to experience a greater mood change during the experiment. Mood.before has weak or near-zero correlations with most variables, except for a moderate negative correlation with invs_C (-0.46), implying that participants with a lower initial mood tended to invest more in Security C. Additionally, the overdraft variable has weak or near-zero correlations with most variables, except for a moderate negative correlation with invs_C (-0.46). This could indicate that participants who invested more in Security C were more likely to have a higher overdraft or vice versa.
 
 ## Correlation Chart 
 ```{r, echo=FALSE, warning = FALSE, message = FALSE}
 library(PerformanceAnalytics)
 chart.Correlation(data.cor, histogram = TRUE, pch = 19)
 ```
-
 The above two plots display the correlations between our continuous variables in our dataset. Correlations with no X's are significant correlations (or ones with asterisks). Focusing on the **investment portfolio return (invs_return)** and **average lottery return Lot_return_avg** variables, we see many significant correlations with other variables. Average lottery return had a very strong positive correlation (1.00) with Lot2, the amount invested in a high risk, high return lottery, and also had a significant weak positive correlation with moodchange (0.13), indicating how much a participant's mood improved. The investment portfolio return had a strong positive correlation (0.88) with invs_B,  a high-risk high-return security, a strong negative correlation (-0.83) with invs_c, a security that was risk-free but had low returns, and also had a weak positive correlation (0.13) with moodchange. Interestingly, the frequency people's bank account was overdrawn and mood before the investment exercise did not significantly impact their investment portfolio or lottery returns.
 
 **Overall, this suggests that people who invested 1% more in the riskier lotteries / securities had 0.88% and 1% higher expected investment portfolio and average lottery returns, respectively. Furthermore, people who had got happier by 1 more point on the happiness scale had a 0.13% higher return in both lotteries and portfolios. Looking at the left side of the correlation chart, these correlations look more or less linear, which makes them appropriate for linear regression later on.**
@@ -419,6 +424,8 @@ legend("topleft", c("Theoretical CI", "Boot CI"),
        lwd = 3, col = c("darkgoldenrod1", "cadetblue2"), 
        bg = "white", lty = c(2, 1))
 ```
+The plot illustrates the bootstrapped correlation distribution and associated confidence intervals (CIs) for a sample correlation. The distribution is approximately symmetric and unimodal, centered around a correlation value of approximately 0.88, derived from resampling the data with replacement multiple times. The bootstrapped confidence interval (Boot CI) estimates the likely range of the true population correlation, while the Theoretical CI is calculated using normal theory assumptions. The slightly narrower bootstrapped CI compared to the theoretical CI suggests potential violations of normal theory assumptions or better accuracy in estimating the true population correlation's uncertainty. Although some bootstrapped correlations fall outside the range of 0.84 to 0.91 on the x-axis, the majority concentrate within this interval, with rapid tail tapering. The distribution's height and concentration around the peak at 0.88 indicate the sample correlation's reliability as an estimate of the true population correlation, considering sampling variability and uncertainty from bootstrapping.
+
 # Permutation Test
 
 ```{r, echo=FALSE}
@@ -450,7 +457,7 @@ abline(v = actualdiff,
 mean(abs(diff) >= abs(actualdiff))
 
 ```
-
+The distribution is roughly symmetric and centered around 0, resembling a normal distribution with some deviations. A prominent bar around 0.4 suggests the actual observed median difference, indicating statistical significance and unlikelihood under the null hypothesis of no group differences.Occasional bars to the right of the observed difference denote rarer instances where permuted samples exceed the observed value. Conversely, fewer negative differences on the left side further validate the significance of the observed positive median difference. Overall, the permutation distribution offers a non-parametric method to assess the significance of the observed difference by comparing it to differences under the null hypothesis. Its positioning in the extreme right tail suggests statistical significance.
 
 ### Multiple Regression
 ```{r}
@@ -463,6 +470,7 @@ studres(model1)
 summary(model1)
 
 ```
+
 ```{r}
 
 model1.5 <- lm(invs_return ~ musictype + moodchange + gender + Lot2 + invs_B, data = data)
@@ -474,7 +482,12 @@ studres(model1.5)
 summary(model1.5)
 
 ```
+The NQ plot is used to assess the normality of the studentized residuals for the "Lottery Gain, %" variable. If the residuals follow a normal distribution, the points should approximately follow the diagonal reference line. However, in this case, the points exhibit a distinct curved pattern, forming an upward trend away from the reference line. This curvature suggests that the residuals have heavier tails and are more positively skewed than a normal distribution. The two points at the lower end (around -3 and -2 on the x-axis) indicate potential outliers or extreme values in the negative residuals. Similarly, the points at the upper end (around 2 and 3 on the x-axis) suggest the presence of outliers or extreme positive residuals. Overall, the NQ plot indicates a violation of the normality assumption for the residuals, which could have implications for the validity of statistical inferences based on this regression model.
 
+The scatter plot allows us to assess the assumption of homoscedasticity (constant variance of residuals) and detect potential patterns or trends in the residuals. Ideally, the residuals should be randomly scattered around the horizontal reference line with no discernible patterns.
+While the residuals appear to be relatively evenly scattered across the range of fitted values, indicating relatively constant variance, there is a noticeable pattern or clustering of positive and negative residuals. For example, around fitted values of 7-8, there is a cluster of negative residuals, while around fitted values of 10-11, there is a cluster of positive residuals. This pattern suggests that the model may not be capturing certain complexities or nonlinearities in the data, leading to systematic over- or under-prediction in certain regions of the fitted value space.
+
+The model has a high R-squared value of 0.9966 indicates that the model explains approximately 99.66% of the variation in the response variable "Lot_return_avg". The coefficients table shows that the predictors "genderMale", "Lot2", and "invs_B" are statistically significant at the 0.05 level or lower. "genderMale" has a positive coefficient of 0.03456033, suggesting that males tend to have higher average lottery gains compared to females, holding other predictors constant. "Lot2" has a positive coefficient of 0.07125260, indicating that higher values of this predictor are associated with higher lottery gains. "invs_B" has a positive coefficient of 0.00010156, implying that increasing values of this predictor are related to higher lottery gains.
 
 ```{r}
 library(leaps)
@@ -502,7 +515,9 @@ summary(bestmodel)
 myResPlots2(bestmodel, "Lottery Winnings, %")
 studres(bestmodel)
 ```
-Mention that there are outliers.
+In the NQ Plot, the data points closely follow the blue line, indicating that the residuals are approximately normally distributed. However, there are a few potential outliers at the extreme ends of the distribution, as shown by the isolated points deviating from the line. The scatterplot illustrates the relationship between fitted values and studentized residuals. The green and blue dashed lines delineate the anticipated range of residuals under the assumption of a well-fitting model. While a substantial portion of residuals aligns within this expected range, a subset of points deviates beyond these bounds. These observations are indicative of potential outliers or instances where the model encounters difficulty in accurately capturing the underlying data dynamics. There exists a studentized residual values of -1.4520049140 and -1.5917606227, respectively, which are notably large in magnitude and are the potential outliers.
+
+Overall, while the NQ plot suggests that the residuals are approximately normally distributed, the presence of potential outliers in the residuals vs. fitted values plot and the extreme residual values themselves indicate that there are some observations that the model does not fit well. 
 
 ### Ancova
 
@@ -510,7 +525,7 @@ Mention that there are outliers.
 Anova(model1, type = 3)
 (coef <- coef(model1))
 ```
-
+The analysis of variance (ANOVA) Type III test results for the response variable lot_return_avg reveal significant insights into the influence of various predictors on lottery return averages. The intercept term exhibits a remarkably large F-value of 77204.6701, coupled with an exceedingly small p-value (< 0.0000000000000022), indicating its statistical significance. Moving to individual predictors, the variable musictype demonstrates a marginal significance at the 10% level, with an F-value of 2.6578 and a p-value of 0.071477. Conversely, the effect of moodchange on lot_return_avg appears non-significant, as evidenced by an F-value of 1.1843 and a p-value of 0.277203. In contrast, the variable gender yields a notable F-value of 9.3125 and a p-value of 0.002445, indicating statistical significance at the 1% level. Similarly, Lot2 exerts a highly significant impact on lot_return_avg, underscored by an exceptionally large F-value of 96125.5330 and a minute p-value (< 0.0000000000000022). Moreover, invs_B demonstrates statistical significance at the 0.01% level, with an F-value of 16.6692 and a p-value of 0.00005486. The significance codes at the table's bottom further elucidate the variables' significance levels, providing a comprehensive understanding of their respective impacts on lottery return averages.
 
 ```{r}
 ttest1 <- t.test(data$Lot_avg ~ data$gender, conf.level = 0.99)
