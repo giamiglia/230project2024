@@ -1,6 +1,6 @@
 ---
-title: "Grooves & Gains: What music should you listen to when investing your $$$"
-author: "Olive Oil Mashed Potatoes"
+title: "Grooves & Gains: Music You Should Listen to When Making Financial Decisions"
+author: "OliveOil MashedPotatoes"
 date: "2023-04-27"
 geometry: margin = 1.5cm
 output:
