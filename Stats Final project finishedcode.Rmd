@@ -53,6 +53,8 @@ In this report, we utilized a behavioral questionnaire dataset from a study cond
 + **timechange** 
 + **libridate** 
 + **olsrr** 
++ **ggplot2** 
+
 
 ```{r, include=FALSE}
 data <- read.csv("https://github.com/giamiglia/230project2024/raw/main/230finaldata.csv", sep = ";")
@@ -108,8 +110,8 @@ data <- data[,-(13:16)]
 
 names(data)
 ```
-
-# Boxplots
+# Descriptive Plots and Summary Information
+## Boxplots
 ```{r out.width="70%", fig.align='center'}
 #Plots of lottery by gender
 par(mfrow = c(1,3))
@@ -243,6 +245,7 @@ boxplot(data$music_like[data$gender == "Female"] ~ data$musictype[data$gender ==
 
 These boxplots depict the distribution of music ratings provided by males and females for fast and slow music types. For males, the median rating for fast music is around 1.5 on the provided scale, with the interquartile range (IQR) spanning from approximately 1.0 to 2.0. In contrast, the median rating for slow music is higher at 2.5, and the IQR is wider, ranging from roughly 2.0 to 3.0, indicating greater variability in ratings for slow music compared to fast music. Notably, no outliers are observed for males in either music condition. Turning to females, the median rating for fast music is similar to that of males, around 1.5, with a relatively narrow IQR from approximately 1.0 to 2.0. However, for slow music, the distribution is quite different. The median rating is lower than for fast music, around 1.5, and there is the presence of an outlier around 3.0. This outlier suggests that while most females rated slow music lower than fast music, some rated it substantially higher. Overall, the data indicates that males tend to prefer and exhibit less variability in their ratings for slow music, while females generally rate fast music higher but with a wider range of individual preferences for slow music.
 
+## Scatterplots
 ```{r out.width="70%", fig.align='center'}
 #Lottery Returns by moodchange
 par(mfrow = c(1,2))
@@ -362,6 +365,45 @@ ggplot(data, aes(x = invs_B, y = Lot_return_avg, color = musictype)) +
   theme_minimal()
 ```
 The plot displays the relationship between lottery winnings and the amount invested in Security B, grouped by different music types. The x-axis represents the amount invested in Security B, ranging from 0 to 1000 units, while the y-axis shows the lottery winnings as a percentage. The data points exhibit substantial variation around each regression line, indicating that there are other factors influencing lottery winnings besides the amount invested in Security B and the music type. This observation suggests that the linear regression model with just the investment in Security B and music type as predictor variables is not sufficient to fully explain the variability in lottery winnings. The scattered data points around the regression lines indicate the presence of other factors or variables that contribute to the variation in lottery winnings but are not accounted for in the current model. At lower investment levels in Security B (around 250 units), the lottery winnings for the "Slow" music type appear to be higher on average compared to the other two music types. However, as the investment in Security B increases (around 750 units), the lottery winnings for the "None" music type tend to be higher on average, while the "Fast" music type falls in between. This observation highlights a non-linear relationship between the variables. At lower investment levels in Security B, participants who listened to slow music seemed to perform better in terms of lottery winnings compared to those who listened to fast music or no music. However, this trend appears to reverse at higher investment levels, where participants who did not listen to any music tended to have higher lottery winnings on average, with the fast music group falling in between the other two groups. This pattern suggests that the effect of music type on lottery winnings may be moderated by the level of investment in Security B. 
+
+## T-Tests
+```{r}
+ttest1 <- t.test(data$Lot_avg ~ data$gender, conf.level = 0.99)
+ttest1
+
+ttest2 <-t.test(data$invs_A ~ data$gender, conf.level = 0.99)
+ttest2
+
+ttest3 <-t.test(data$invs_B ~ data$gender, conf.level = 0.99)
+ttest3
+
+ttest4 <-t.test(data$invs_C ~ data$gender, conf.level = 0.99)
+ttest4
+
+ttest5 <-t.test(data$invs_num ~ data$gender, conf.level = 0.99)
+ttest5
+
+ttest6 <- t.test(data$Lot_return_avg ~ data$gender, conf.level = 0.99)
+ttest6
+
+ttest7 <- t.test(data$invs_return ~ data$gender, conf.level = 0.99)
+ttest7
+
+ttest8 <- t.test(data$moodchange ~ data$gender, conf.level = 0.99)
+ttest8
+
+ttest9 <- t.test(data$music_like ~ data$gender, conf.level = 0.99)
+ttest9
+
+ttest10 <- t.test(data$Lot1_return ~ data$gender, conf.level = 0.99)
+ttest10
+
+ttest11 <- t.test(data$Lot2_return ~ data$gender, conf.level = 0.99)
+ttest11
+
+ttest12 <- t.test(data$Lot3_return ~ data$gender, conf.level = 0.99)
+ttest12
+```
 
 ## Correlations Plot
 We ran these following plots to visually see the correlations and significance values.
@@ -526,41 +568,3 @@ Anova(model1, type = 3)
 (coef <- coef(model1))
 ```
 The analysis of variance (ANOVA) Type III test results for the response variable lot_return_avg reveal significant insights into the influence of various predictors on lottery return averages. The intercept term exhibits a remarkably large F-value of 77204.6701, coupled with an exceedingly small p-value (< 0.0000000000000022), indicating its statistical significance. Moving to individual predictors, the variable musictype demonstrates a marginal significance at the 10% level, with an F-value of 2.6578 and a p-value of 0.071477. Conversely, the effect of moodchange on lot_return_avg appears non-significant, as evidenced by an F-value of 1.1843 and a p-value of 0.277203. In contrast, the variable gender yields a notable F-value of 9.3125 and a p-value of 0.002445, indicating statistical significance at the 1% level. Similarly, Lot2 exerts a highly significant impact on lot_return_avg, underscored by an exceptionally large F-value of 96125.5330 and a minute p-value (< 0.0000000000000022). Moreover, invs_B demonstrates statistical significance at the 0.01% level, with an F-value of 16.6692 and a p-value of 0.00005486. The significance codes at the table's bottom further elucidate the variables' significance levels, providing a comprehensive understanding of their respective impacts on lottery return averages.
-
-```{r}
-ttest1 <- t.test(data$Lot_avg ~ data$gender, conf.level = 0.99)
-ttest1
-
-ttest2 <-t.test(data$invs_A ~ data$gender, conf.level = 0.99)
-ttest2
-
-ttest3 <-t.test(data$invs_B ~ data$gender, conf.level = 0.99)
-ttest3
-
-ttest4 <-t.test(data$invs_C ~ data$gender, conf.level = 0.99)
-ttest4
-
-ttest5 <-t.test(data$invs_num ~ data$gender, conf.level = 0.99)
-ttest5
-
-ttest6 <- t.test(data$Lot_return_avg ~ data$gender, conf.level = 0.99)
-ttest6
-
-ttest7 <- t.test(data$invs_return ~ data$gender, conf.level = 0.99)
-ttest7
-
-ttest8 <- t.test(data$moodchange ~ data$gender, conf.level = 0.99)
-ttest8
-
-ttest9 <- t.test(data$music_like ~ data$gender, conf.level = 0.99)
-ttest9
-
-ttest10 <- t.test(data$Lot1_return ~ data$gender, conf.level = 0.99)
-ttest10
-
-ttest11 <- t.test(data$Lot2_return ~ data$gender, conf.level = 0.99)
-ttest11
-
-ttest12 <- t.test(data$Lot3_return ~ data$gender, conf.level = 0.99)
-ttest12
-```
