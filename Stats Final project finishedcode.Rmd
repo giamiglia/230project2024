@@ -354,7 +354,7 @@ abline(lm(data$invs_return[data$gender == "Female"] ~ data$music_like[data$gende
 
 These scatterplots dispolay the relationship between average portfolio returns and music ratings on a 1-3 scale, one for males and the other for females. For males, the average portfolio returns range from around 6 to 14 across different music rating values from 1.0 to 3.0. There is no clear trend or pattern visible, with the points scattered randomly across the range of music ratings. This suggests that music ratings do not have a significant impact on portfolio returns for males. For females, the average portfolio returns range from around 6 to 12. There is a positive linear trend visible, with the line of best fit sloping upwards from left to right. As the music rating increases from 1.0 to 3.0, the average portfolio returns tend to increase correspondingly. This relationship appears to be relatively strong, indicating that higher music ratings are associated with higher average portfolio returns for females. The spread of points is slightly tighter for females compared to males, suggesting potentially less variability in portfolio returns for a given music rating level among females. While the overall trend for females is positive, there is still some variation in the data points around the line of best fit, implying that music ratings alone may not fully explain the portfolio returns, and other factors could also be at play. Overall, while music ratings do not seem to significantly impact portfolio returns for males based on this scatterplot, for females, higher music ratings are associated with higher average portfolio returns in a linear fashion across the range of observed music rating values. The relationship between music ratings and portfolio returns appears to be more pronounced and consistent for females compared to males.
 
-```{r}
+```{r, out.width="70%", fig.align='center'}
 library(ggplot2)
 ggplot(data, aes(x = invs_B, y = Lot_return_avg, color = musictype)) +
   geom_point() +
@@ -407,7 +407,7 @@ ttest12
 
 ## Correlations Plot
 We ran these following plots to visually see the correlations and significance values.
-```{r, echo=FALSE, warning = FALSE, message = FALSE, fig.align = "center"}
+```{r, echo=FALSE, warning = FALSE, message = FALSE, out.width="70%", fig.align='center'}
 library(car)
 library(corrplot)
 source("http://www.reuningscherer.net/s&ds230/Rfuncs/regJDRS.txt")
@@ -426,7 +426,7 @@ The weak positive correlation between moodchange and Lot_return_avg (0.17) indic
 The moderate negative correlation between moodchange and Mood.before (-0.31) suggests that participants with a lower initial mood before the experiment were more likely to experience a greater mood change during the experiment. Mood.before has weak or near-zero correlations with most variables, except for a moderate negative correlation with invs_C (-0.46), implying that participants with a lower initial mood tended to invest more in Security C. Additionally, the overdraft variable has weak or near-zero correlations with most variables, except for a moderate negative correlation with invs_C (-0.46). This could indicate that participants who invested more in Security C were more likely to have a higher overdraft or vice versa.
 
 ## Correlation Chart 
-```{r, echo=FALSE, warning = FALSE, message = FALSE}
+```{r, echo=FALSE, warning = FALSE, message = FALSE, out.width="70%", fig.align='center'}
 library(PerformanceAnalytics)
 chart.Correlation(data.cor, histogram = TRUE, pch = 19)
 ```
@@ -437,7 +437,7 @@ The above two plots display the correlations between our continuous variables in
 Is riskiness truly as strong of a predictor of return as it appears? We ran a bootstrap to find out! 
 
 ## Bootstrap Test
-```{r}
+```{r, out.width="70%", fig.align='center'}
 set.seed(230)
 
 (cor1test <- cor.test(data$invs_return, data$invs_B, conf.level = .95))
@@ -470,7 +470,7 @@ The plot illustrates the bootstrapped correlation distribution and associated co
 
 # Permutation Test
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, out.width="70%", fig.align='center'}
 
 set.seed(230)
 N <- 10000
@@ -502,25 +502,21 @@ mean(abs(diff) >= abs(actualdiff))
 The distribution is roughly symmetric and centered around 0, resembling a normal distribution with some deviations. A prominent bar around 0.4 suggests the actual observed median difference, indicating statistical significance and unlikelihood under the null hypothesis of no group differences.Occasional bars to the right of the observed difference denote rarer instances where permuted samples exceed the observed value. Conversely, fewer negative differences on the left side further validate the significance of the observed positive median difference. Overall, the permutation distribution offers a non-parametric method to assess the significance of the observed difference by comparing it to differences under the null hypothesis. Its positioning in the extreme right tail suggests statistical significance.
 
 ### Multiple Regression
-```{r}
+```{r, out.width="70%", fig.align='center'}
 library(MASS)
 
 model1 <- lm(Lot_return_avg ~ musictype + moodchange + gender + Lot2 + invs_B, data = data)
 
 myResPlots2(model1, "Lottery Gain, %")
-studres(model1)
 summary(model1)
 
 ```
 
-```{r}
+```{r, out.width="70%", fig.align='center'}
 
 model1.5 <- lm(invs_return ~ musictype + moodchange + gender + Lot2 + invs_B, data = data)
 
 myResPlots2(model1.5, "Portfolio Return, %")
-
-studres(model1.5)
-
 summary(model1.5)
 
 ```
@@ -553,9 +549,8 @@ datanew <- data[ , bestvars]
 bestmodel <- lm(Lot_return_avg ~ . , data = datanew)
 summary(bestmodel)
 ```
-```{r}
+```{r, out.width="70%", fig.align='center'}
 myResPlots2(bestmodel, "Lottery Winnings, %")
-studres(bestmodel)
 ```
 In the NQ Plot, the data points closely follow the blue line, indicating that the residuals are approximately normally distributed. However, there are a few potential outliers at the extreme ends of the distribution, as shown by the isolated points deviating from the line. The scatterplot illustrates the relationship between fitted values and studentized residuals. The green and blue dashed lines delineate the anticipated range of residuals under the assumption of a well-fitting model. While a substantial portion of residuals aligns within this expected range, a subset of points deviates beyond these bounds. These observations are indicative of potential outliers or instances where the model encounters difficulty in accurately capturing the underlying data dynamics. There exists a studentized residual values of -1.4520049140 and -1.5917606227, respectively, which are notably large in magnitude and are the potential outliers.
 
@@ -563,7 +558,7 @@ Overall, while the NQ plot suggests that the residuals are approximately normall
 
 ### Ancova
 
-```{r}
+```{r, out.width="70%", fig.align='center'}
 Anova(model1, type = 3)
 (coef <- coef(model1))
 ```
